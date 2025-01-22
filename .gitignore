@@ -400,5 +400,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 /src/config.cpp
-/.pio/build
+/.pio
 /.vscode
