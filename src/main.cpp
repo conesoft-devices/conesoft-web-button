@@ -1,7 +1,3 @@
-#include <ESP8266WiFi.h>
-#include <WiFiSettings.h>
-#include <ESP8266HTTPClient.h>
-
 #include "csft-lib.h"
 
 const int BUTTON1 = 4;
