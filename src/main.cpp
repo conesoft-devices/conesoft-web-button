@@ -12,7 +12,9 @@ void setup() {
   Serial.println("booting up conesoft-web-button");
   pinMode(LED_BUILTIN, OUTPUT);
   LittleFS.begin();
+  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
   WiFi.forceSleepBegin();
+  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
   
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
