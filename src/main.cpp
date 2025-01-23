@@ -11,9 +11,11 @@ void setup() {
   Serial.begin(115200);
   Serial.println("booting up conesoft-web-button");
   pinMode(LED_BUILTIN, OUTPUT);
+  LittleFS.begin();
+  WiFi.forceSleepBegin();
+  
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
-  LittleFS.begin();
 
   WiFiSettings.hostname = "csft-btn-";
   String host = WiFiSettings.string("host", "", "Conesoft Web Devices Server");
