@@ -30,7 +30,7 @@ void handlePressed(int button)
   if (digitalRead(button) == LOW)
   {
     digitalWrite(LED_BUILTIN, LOW);
-    csft_web_request(webRequest, "Conesoft-Web-Button", WiFi.macAddress() + "::" + button);
+    csft_web_request(webRequest, "Conesoft-Web-Button", String("::") + button);
   }
   while (digitalRead(button) == LOW)
   {
