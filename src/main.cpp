@@ -1,80 +1,43 @@
-#include <DoubleResetDetector.h>
+#include <ESP8266WiFi.h>
 #include <WiFiSettings.h>
-#include <LittleFS.h>
-#include "helpers.h"
-#include "config.h"
+#include <ESP8266HTTPClient.h>
 
-DoubleResetDetector drd(10, 0);
+#include "csft-lib.h"
 
-void setup() {
-  system_update_cpu_freq(160);
-  Serial.begin(115200);
-  Serial.println("booting up conesoft-web-button");
-  pinMode(LED_BUILTIN, OUTPUT);
-  LittleFS.begin();
-  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-  WiFi.forceSleepBegin();
-  WiFi.setPhyMode(WIFI_PHY_MODE_11G);
-  
+const int BUTTON1 = 4;
+const int BUTTON2 = 5;
+
+String webRequest;
+
+void setup()
+{
+  csft_setup("conesoft-web-button", []() -> void
+             { webRequest = WiFiSettings.string("webrequest", "", "Conesoft Web Devices Web Request Target"); });
+
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
-
-  WiFiSettings.hostname = "csft-btn-";
-  String host = WiFiSettings.string("host", "", "Conesoft Web Devices Server");
-  int port = WiFiSettings.integer("port", 0, 65535, 0, "Conesoft Web Devices Server Port");
-
-  if (drd.detectDoubleReset()) {
-    WiFiSettings.portal();
-  }
-
-  WiFiSettings.connect();
 }
 
 void handlePressed(int button);
 
-void loop() {
+void loop()
+{
+  csft_loop();
+
   handlePressed(BUTTON1);
   handlePressed(BUTTON2);
-  setLed(false);
-
-  drd.loop();
-  delay(10);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 
-void makeWebRequest(int button) {
-  WiFiClient client;
-  int retries = 5;
-  while(!!!client.connect("192.168.1.2", 17184) && (retries-- > 0)) {
+void handlePressed(int button)
+{
+  if (digitalRead(button) == LOW)
+  {
+    digitalWrite(LED_BUILTIN, LOW);
+    csft_web_request(webRequest, "Conesoft-Web-Button", WiFi.macAddress() + "::" + button);
   }
-  if(!!!client.connected()) {
-    error(2);
-  }
-  client.print(String("GET ") + "/device/action" + 
-                  " HTTP/1.1\r\n" +
-                  "Host: " + "192.168.1.2" + "\r\n" + 
-                  "User-Agent: Conesoft-Web-Button\r\n" +
-                  "Conesoft-Web-Button-Id: " + WiFi.macAddress() + "::" + button + "\r\n" +
-                  "Connection: close\r\n\r\n");
-                  
-  int timeout = 5 * 10; // 5 seconds             
-  while(!!!client.available() && (timeout-- > 0)) {
-    delay(100);
-  }
-  if(!!!client.available()) {
-    error(3);
-  }
-  while(client.available()){
-    client.read();
-  }
-  client.stop();
-}
-
-void handlePressed(int button) {
-  if(isPressed(button)) {
-    setLed(true);
-    makeWebRequest(button);
-  }
-  while(isPressed(button)) {
+  while (digitalRead(button) == LOW)
+  {
     delay(10);
   }
 }
